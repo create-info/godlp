@@ -187,6 +187,40 @@ func (I *Engine) dfsJSON(path string, ptr *interface{}, kvMap map[string]string,
 				}
 			}
 		}
+	case json.Number:
+		if val, ok := (*ptr).(json.Number); ok {
+			if isDeidentify {
+				if mask, ok := kvMap[path]; ok {
+					return mask
+				} else {
+					return val
+				}
+			}
+			kvMap[path] = val.String()
+			return val
+		}
+	case float64:
+		// float64 don't need to mask
+		if val, ok := (*ptr).(float64); ok {
+			if isDeidentify {
+				if mask, ok := kvMap[path]; ok {
+					return mask
+				} else {
+					return val
+				}
+			}
+			kvMap[path] = fmt.Sprintf("%0.f", val)
+			return val
+		}
+	case bool:
+		// bool don't need to mask
+		if val, ok := (*ptr).(bool); ok {
+			kvMap[path] = fmt.Sprint(val)
+		}
+	case nil:
+		if path != "" {
+			kvMap[path] = fmt.Sprint(nil)
+		}
 	}
 	return *ptr
 }
